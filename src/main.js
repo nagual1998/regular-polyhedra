@@ -1,9 +1,13 @@
-﻿import * as THREE from "https://unpkg.com/three@0.166.1/build/three.module.js";
+﻿import * as THREE from "./vendor/three.module.js";
 
 const canvas = document.querySelector("#polyhedra-canvas");
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0xf7f8fb, 0.018);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x697586, 2));
+const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
+keyLight.position.set(-3, 5, 8);
+scene.add(keyLight);
 
 const renderer = new THREE.WebGLRenderer({
   canvas,
@@ -91,6 +95,14 @@ const meshes = polyhedra.map((item) => {
   const glow = new THREE.Mesh(item.geometry, glowMaterial);
   glow.scale.setScalar(1.04);
 
+  const solid = new THREE.Mesh(item.geometry, new THREE.MeshStandardMaterial({
+    color: item.color,
+    roughness: 0.65,
+    metalness: 0,
+    flatShading: true,
+  }));
+  solid.visible = false;
+
   const hit = new THREE.Mesh(item.geometry, hitMaterial);
   hit.scale.setScalar(1.35);
   hit.userData.polyhedron = item.name;
@@ -98,10 +110,55 @@ const meshes = polyhedra.map((item) => {
   const group = new THREE.Group();
   group.name = item.name;
   group.position.set(...item.position);
-  group.add(hit, glow, wire);
+  group.add(hit, glow, wire, solid);
   rig.add(group);
 
-  return { ...item, active: false, group, hit };
+  return { ...item, active: false, group, hit, wire, glow, solid };
+});
+
+const modeControls = document.querySelectorAll("[data-display-mode]");
+let focusedMesh = null;
+
+function updateFocusLayout() {
+  meshes.forEach((item) => {
+    item.group.visible = focusedMesh === null || item === focusedMesh;
+    item.group.position.set(...item.position);
+    item.group.scale.setScalar(1);
+  });
+  if (focusedMesh) {
+    focusedMesh.geometry.computeBoundingSphere();
+    const halfFov = THREE.MathUtils.degToRad(camera.fov / 2);
+    const limitingAngle = Math.min(halfFov, Math.atan(Math.tan(halfFov) * camera.aspect));
+    const radius = focusedMesh.geometry.boundingSphere.radius * 1.04;
+    const scale = camera.position.z * Math.sin(limitingAngle) * 0.55 / (radius * rig.scale.x);
+    focusedMesh.group.position.set(0, 0, 0);
+    focusedMesh.group.scale.setScalar(scale);
+  }
+  scene.updateMatrixWorld(true);
+}
+
+canvas.addEventListener("dblclick", (event) => {
+  const item = findMeshAtPointer(event);
+  if (!item) return;
+  stopDrag();
+  focusedMesh = focusedMesh === item ? null : item;
+  updateFocusLayout();
+  updateDebugState();
+  event.preventDefault();
+});
+
+modeControls.forEach((control) => {
+  control.addEventListener("click", () => {
+    const solidMode = control.dataset.displayMode === "solid";
+    meshes.forEach((item) => {
+      item.solid.visible = solidMode;
+      item.wire.visible = !solidMode;
+      item.glow.visible = !solidMode;
+    });
+    modeControls.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button === control));
+    });
+  });
 });
 
 window.polyhedraDemo = {
@@ -127,10 +184,12 @@ function setPointerFromEvent(event) {
 
 function findMeshAtPointer(event) {
   setPointerFromEvent(event);
+  scene.updateMatrixWorld(true);
+  camera.updateMatrixWorld(true);
   raycaster.setFromCamera(pointer, camera);
 
   const hits = raycaster.intersectObjects(
-    meshes.map((item) => item.hit),
+    meshes.filter((item) => item.group.visible).map((item) => item.hit),
     false,
   );
   const hit = hits[0];
@@ -208,6 +267,7 @@ function resize() {
 
   const compactScale = width < 760 ? 0.72 : 1;
   rig.scale.setScalar(compactScale);
+  updateFocusLayout();
 }
 
 window.addEventListener("resize", resize);
@@ -219,6 +279,8 @@ function updateDebugState() {
       name: item.name,
       position: item.group.position.toArray(),
       active: item.active,
+      visible: item.group.visible,
+      focused: item === focusedMesh,
       rotation: [item.group.rotation.x, item.group.rotation.y, item.group.rotation.z],
       screen: item.group.getWorldPosition(new THREE.Vector3()).project(camera).toArray(),
     })),

@@ -10,6 +10,10 @@
     <main class="app">
       <section class="stage" aria-label="5つの正多面体の3Dワイヤーフレームデモ">
         <canvas id="polyhedra-canvas"></canvas>
+        <div class="display-mode" role="group" aria-label="表示モード">
+          <button type="button" data-display-mode="wire" aria-pressed="true">ワイヤーフレーム</button>
+          <button type="button" data-display-mode="solid" aria-pressed="false">面に色</button>
+        </div>
         <div class="hud" aria-label="正多面体の回転切り替え">
           <button type="button" data-polyhedron="Tetrahedron" aria-pressed="false">Tetrahedron</button>
           <button type="button" data-polyhedron="Cube" aria-pressed="false">Cube</button>
@@ -19,7 +23,7 @@
         </div>
       </section>
     </main>
-    <script type="module" src="./main.js?v=6"></script>
+    <script type="module" src="./main.js?v=7"></script>
   </body>
 </html>
 

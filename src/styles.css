@@ -55,6 +55,32 @@ body {
 
 }
 
+.display-mode {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  max-width: calc(100% - 24px);
+}
+
+.display-mode button {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid #aeb7c2;
+  background: #fff;
+  color: #18202b;
+  font: inherit;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.display-mode button:first-child { border-radius: 6px 0 0 6px; }
+.display-mode button:last-child { border-radius: 0 6px 6px 0; }
+.display-mode button[aria-pressed="true"] { background: #18202b; color: #fff; }
+.display-mode button:focus-visible { outline: 3px solid #0077b6; outline-offset: 3px; }
+
 .hud button {
   min-width: 0;
   appearance: none;
