@@ -13,6 +13,18 @@
         <div class="display-mode" role="group" aria-label="表示モード">
           <button type="button" data-display-mode="wire" aria-pressed="true">ワイヤーフレーム</button>
           <button type="button" data-display-mode="solid" aria-pressed="false">面に色</button>
+          <button type="button" id="toggle-spheres" aria-pressed="false">外接球</button>
+          <button type="button" id="toggle-duals" aria-pressed="false">双対多面体</button>
+          <button type="button" id="toggle-midpoints" aria-pressed="false">中点多面体</button>
+          <button type="button" data-diagonal-polyhedron="Cube" aria-pressed="false">正六面体内の正四面体</button>
+          <button type="button" data-diagonal-polyhedron="Dodecahedron" aria-pressed="false">正十二面体内の立方体</button>
+          <button type="button" id="toggle-projections" aria-pressed="false">球面への射影点</button>
+          <button type="button" id="reset-colors">色をリセット</button>
+          <div id="projection-legend" hidden>
+            <span class="vertex-point-key">頂点0<b data-point-count="vertices" hidden></b></span>
+            <span class="edge-point-key">辺の中点１<b data-point-count="edges" hidden></b></span>
+            <span class="face-point-key">面の中心2<b data-point-count="faces" hidden></b></span>
+          </div>
         </div>
         <div class="hud" aria-label="正多面体の回転切り替え">
           <button type="button" data-polyhedron="Tetrahedron" aria-pressed="false">Tetrahedron</button>
@@ -23,7 +35,7 @@
         </div>
       </section>
     </main>
-    <script type="module" src="./main.js?v=7"></script>
+    <script type="module" src="./main.js?v=14"></script>
   </body>
 </html>
 
